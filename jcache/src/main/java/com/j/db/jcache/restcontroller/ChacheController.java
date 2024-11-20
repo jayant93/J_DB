@@ -2,7 +2,11 @@ package com.j.db.jcache.restcontroller;
 
 import com.j.db.jcache.data.structures.JCache;
 import com.j.db.jcache.data.structures.JCacheValue;
+import com.j.db.jcache.exceptions.CacheEmptyException;
+import com.j.db.jcache.exceptions.ResourceNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.Instant;
@@ -34,13 +38,22 @@ public class ChacheController {
     }
 
     @GetMapping
-    public JCacheValue getCachedValueByKey(@RequestParam String key){
-        return jCache.getElementByKey(key);
+    public ResponseEntity<JCacheValue> getCachedValueByKey(@RequestParam String key){
+
+        if(!jCache.getKeyStore().containsKey(key))
+             throw new ResourceNotFoundException("Element with Key :"+key +" is not present in JCache" +
+                     " ,Either it was removed due to Expired TTL or according to our eviction policy" +
+                     " its not being used very frequently OR it was never added to the cache");
+
+        return new ResponseEntity<>(jCache.getElementByKey(key),HttpStatus.OK);
     }
 
     @GetMapping("/all")
-    public List<JCacheValue> getAllCachedValues(){
+    public ResponseEntity<List<JCacheValue>> getAllCachedValues(){
         List<JCacheValue> jCacheValueArrayList = jCache.getKeyStore().values().stream().toList();
-        return jCacheValueArrayList;
+        if(jCacheValueArrayList.isEmpty()){
+            throw new CacheEmptyException("Cache is Emtpy Right Now add some elements and try again");
+        }
+        return new ResponseEntity<>(jCacheValueArrayList,HttpStatus.OK);
     }
 }
