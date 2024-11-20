@@ -44,6 +44,19 @@ public class ChacheController {
         }
     }
 
+    @PostMapping("/addAll")
+    public void setMultipleElementsToCache(@RequestBody List<JCacheValue> cacheValueList){
+        cacheValueList.forEach(cv ->
+            {
+            cv.setTimeOfCreation(Instant.now());
+            try {
+                jCache.addElementToCache(cv.getKey(), cv);
+            }catch (Exception e){
+                throw new InternalServerErrorException(e.getMessage());
+            }
+        });
+    }
+
     @GetMapping
     public ResponseEntity<JCacheValue> getCachedValueByKey(@RequestParam String key){
 
@@ -61,6 +74,19 @@ public class ChacheController {
         if(jCacheValueArrayList.isEmpty()){
             throw new CacheEmptyException("Cache is Emtpy Right Now add some elements and try again");
         }
+        System.out.println("Total Number of Objects : "+jCacheValueArrayList.size());
         return new ResponseEntity<>(jCacheValueArrayList,HttpStatus.OK);
+    }
+
+    @DeleteMapping
+    public ResponseEntity deleteElementWithGivenKey(@RequestParam String key){
+
+        try{
+            jCache.removeElementFromCache(key);
+        }catch(Exception ex){
+            throw new InternalServerErrorException("Deletion failed :"+ex.getMessage());
+        }
+
+        return new ResponseEntity("Deletion Successfull",HttpStatus.OK);
     }
 }
