@@ -21,7 +21,7 @@ public class JCache {
 
     // Constructor initializing the store
     public JCache() {
-        // LinkedHashMap with access order set to true
+        // LinkedHashMap with access order set to true for adding accessed element at the top
         keyValueStore = new LinkedHashMap<>(capacity, 0.75f, true) {
             // Override removeEldestEntry to implement LRU eviction
             @Override
