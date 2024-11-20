@@ -3,6 +3,7 @@ package com.j.db.jcache.restcontroller;
 import com.j.db.jcache.data.structures.JCache;
 import com.j.db.jcache.data.structures.JCacheValue;
 import com.j.db.jcache.exceptions.CacheEmptyException;
+import com.j.db.jcache.exceptions.InternalServerErrorException;
 import com.j.db.jcache.exceptions.ResourceNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -10,7 +11,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.Instant;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -26,15 +26,22 @@ public class ChacheController {
 
     private final JCache jCache;
 
+    AtomicInteger count = new AtomicInteger(0);
+
     @Autowired
     public ChacheController(JCache jCache) {
         this.jCache = jCache;
     }
 
-    @PostMapping
+    @PostMapping(consumes = "application/json")
     public void setCache(@RequestBody JCacheValue jCacheValue){
+        System.out.println("Reached server adding cache : "+count.incrementAndGet());
         jCacheValue.setTimeOfCreation(Instant.now());
-        jCache.addElementToCache(jCacheValue.getKey(),jCacheValue);
+        try {
+            jCache.addElementToCache(jCacheValue.getKey(), jCacheValue);
+        }catch (Exception e){
+            throw new InternalServerErrorException(e.getMessage());
+        }
     }
 
     @GetMapping

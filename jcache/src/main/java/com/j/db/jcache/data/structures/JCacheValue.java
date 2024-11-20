@@ -1,5 +1,7 @@
 package com.j.db.jcache.data.structures;
 
+import com.j.db.jcache.exceptions.InvalidTTLException;
+
 import java.time.Instant;
 import java.util.Objects;
 
@@ -39,8 +41,8 @@ public class JCacheValue<K> {
     }
 
     public void setTtl(Integer ttl) {
-        if (ttl != null && ttl < 0) {
-            throw new IllegalArgumentException("TTL must be non-negative.");
+        if (ttl == null || ttl <= 0) {
+            throw new InvalidTTLException("TTL must not be less than 0.");
         }
         this.ttl = ttl;
     }
