@@ -33,8 +33,8 @@ public class ChacheController {
         this.jCache = jCache;
     }
 
-    @PostMapping(consumes = "application/json")
-    public void setCache(@RequestBody JCacheValue jCacheValue){
+    @PostMapping(path="/add",consumes = "application/json")
+    public ResponseEntity setCache(@RequestBody JCacheValue jCacheValue){
         System.out.println("Reached server adding cache : "+count.incrementAndGet());
         jCacheValue.setTimeOfCreation(Instant.now());
         try {
@@ -42,10 +42,11 @@ public class ChacheController {
         }catch (Exception e){
             throw new InternalServerErrorException(e.getMessage());
         }
+        return new ResponseEntity(jCacheValue,HttpStatus.CREATED);
     }
 
     @PostMapping("/addAll")
-    public void setMultipleElementsToCache(@RequestBody List<JCacheValue> cacheValueList){
+    public ResponseEntity setMultipleElementsToCache(@RequestBody List<JCacheValue> cacheValueList){
         cacheValueList.forEach(cv ->
             {
             cv.setTimeOfCreation(Instant.now());
@@ -55,6 +56,7 @@ public class ChacheController {
                 throw new InternalServerErrorException(e.getMessage());
             }
         });
+        return new ResponseEntity(cacheValueList,HttpStatus.CREATED);
     }
 
     @GetMapping
